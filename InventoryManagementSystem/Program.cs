@@ -582,8 +582,8 @@ namespace InventoryManagementSystem
                 Console.WriteLine($"[!] Error: {e.Message}");
             }
         }
-
         // FEATURE 8: RESTOCK PRODUCT (CAFE ITEM)
+        // This method allows the staff to add more stock to an existing cafe item
         static void RestockProduct()
         {
             Console.WriteLine("\n--- Restock Cafe Item ---");
@@ -593,55 +593,77 @@ namespace InventoryManagementSystem
                 ViewAllProducts();
                 if (products.Count == 0) return;
 
-                Console.Write("\nEnter Item ID to restock: ");
-                int id = int.Parse(Console.ReadLine());
-
+                // Keep asking until a valid ID is entered
                 Product found = null;
-                foreach (Product p in products)
+                while (true)
                 {
-                    if (p.Id == id)
+                    Console.Write("\nEnter Item ID to restock: ");
+                    string idInput = Console.ReadLine();
+
+                    if (!int.TryParse(idInput, out int id))
                     {
-                        found = p;
-                        break;
+                        Console.WriteLine("[!] Invalid input! Please enter a valid number.");
+                        continue;
                     }
+
+                    foreach (Product p in products)
+                    {
+                        if (p.Id == id)
+                        {
+                            found = p;
+                            break;
+                        }
+                    }
+
+                    if (found == null)
+                    {
+                        Console.WriteLine("[!] Item ID not found! Please try again.");
+                        continue;
+                    }
+
+                    break; // Valid ID, exit the loop
                 }
 
-                if (found == null)
+                // Keep asking until a valid quantity is entered
+                int qty = 0;
+                while (true)
                 {
-                    Console.WriteLine("[!] Item not found!");
-                    return;
+                    Console.Write($"How many units to add (current stock: {found.Stock}): ");
+                    string qtyInput = Console.ReadLine();
+
+                    if (!int.TryParse(qtyInput, out qty))
+                    {
+                        Console.WriteLine("[!] Invalid input! Please enter a whole number.");
+                        continue;
+                    }
+
+                    if (qty <= 0)
+                    {
+                        Console.WriteLine("[!] Quantity must be greater than zero! Please try again.");
+                        continue;
+                    }
+
+                    break;                                              // Valid quantity, exit the loop
                 }
 
-                Console.Write($"How many units to add (current stock: {found.Stock}): ");
-                int qty = int.Parse(Console.ReadLine());
-
-                if (qty <= 0)
-                {
-                    Console.WriteLine("[!] Quantity must be greater than zero!");
-                    return;
-                }
-
-                found.Stock += qty;
+                found.Stock += qty;                                    // Add the entered quantity to the product's current stock
 
                 TransactionRecord record = new TransactionRecord(
                     transactionIdCounter, "Restock", found.Id, found.Name, qty, currentUser.Username
                 );
-                transactions.Add(record);
-                transactionIdCounter++;
+                transactions.Add(record);                            // Add the record to the transactions list
+                transactionIdCounter++;                              // Increment the ID for the next transaction
 
                 Console.WriteLine($"[+] Restocked '{found.Name}'. New stock: {found.Stock}");
             }
-            catch (FormatException)
-            {
-                Console.WriteLine("[!] Invalid input! Please enter a valid number.");
-            }
             catch (Exception e)
             {
-                Console.WriteLine($"[!] Error: {e.Message}");
+                Console.WriteLine($"[!] Error: {e.Message}");       // Catch any unexpected errors and display the message
             }
         }
 
         // FEATURE 9: DEDUCT STOCK
+        // This method allows the staff to remove stock from an existing cafe item
         static void DeductStock()
         {
             Console.WriteLine("\n--- Deduct Stock ---");
@@ -651,38 +673,65 @@ namespace InventoryManagementSystem
                 ViewAllProducts();
                 if (products.Count == 0) return;
 
-                Console.Write("\nEnter Item ID to deduct stock from: ");
-                int id = int.Parse(Console.ReadLine());
-
+                // Keep asking until a valid ID is entered
                 Product found = null;
-                foreach (Product p in products)
+                while (true)
                 {
-                    if (p.Id == id)
+                    Console.Write("\nEnter Item ID to deduct stock from: ");
+                    string idInput = Console.ReadLine();
+
+                    if (!int.TryParse(idInput, out int id))
                     {
-                        found = p;
-                        break;
+                        Console.WriteLine("[!] Invalid input! Please enter a valid number.");
+                        continue;
                     }
+
+                    // Search the products list for a product matching the entered ID
+                    foreach (Product p in products)
+                    {
+                        if (p.Id == id)
+                        {
+                            found = p;
+                            break;
+                        }
+                    }
+
+                    if (found == null)
+                    {
+                        Console.WriteLine("[!] Item ID not found! Please try again.");
+                        continue;
+                    }
+
+                    break; // Valid ID, exit the loop
                 }
 
-                if (found == null)
+                // Keep asking until a valid quantity is entered
+                // It also checks if the quantity does not exceed the current stock
+                int qty = 0;
+                while (true)
                 {
-                    Console.WriteLine("[!] Item not found!");
-                    return;
-                }
+                    Console.Write($"How many units to deduct (current stock: {found.Stock}): ");
+                    string qtyInput = Console.ReadLine();
 
-                Console.Write($"How many units to deduct (current stock: {found.Stock}): ");
-                int qty = int.Parse(Console.ReadLine());
+                    if (!int.TryParse(qtyInput, out qty))
+                    {
+                        Console.WriteLine("[!] Invalid input! Please enter a whole number.");
+                        continue;
+                    }
 
-                if (qty <= 0)
-                {
-                    Console.WriteLine("[!] Quantity must be greater than zero!");
-                    return;
-                }
+                    if (qty <= 0)
+                    {
+                        Console.WriteLine("[!] Quantity must be greater than zero! Please try again.");
+                        continue;
+                    }
 
-                if (qty > found.Stock)
-                {
-                    Console.WriteLine($"[!] Not enough stock! Current stock is only {found.Stock}.");
-                    return;
+                    if (qty > found.Stock)
+                    {
+                        Console.WriteLine($"[!] Not enough stock! Current stock is only {found.Stock}. Please try again.");
+                        continue;
+                    }
+
+                    break; // Valid quantity, exit the loop
                 }
 
                 found.Stock -= qty;
@@ -695,13 +744,9 @@ namespace InventoryManagementSystem
 
                 Console.WriteLine($"[+] Deducted {qty} from '{found.Name}'. New stock: {found.Stock}");
             }
-            catch (FormatException)
-            {
-                Console.WriteLine("[!] Invalid input! Please enter a valid number.");
-            }
             catch (Exception e)
             {
-                Console.WriteLine($"[!] Error: {e.Message}");
+                Console.WriteLine($"[!] Error: {e.Message}"); // Catch any unexpected errors and display the message
             }
         }
 
