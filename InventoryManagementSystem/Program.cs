@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
 namespace InventoryManagementSystem
 {
     class Program
@@ -34,12 +33,12 @@ namespace InventoryManagementSystem
             AddSampleData();
 
             Console.WriteLine("\nPress Enter to continue...");
-            Console.ReadLine(); // Wait for user to press Enter THEN clear
+            Console.ReadLine();
 
             bool running = true;
             while (running)
             {
-                Console.Clear(); // Clear screen here before showing menu
+                Console.Clear();
                 ShowMainMenu();
 
                 string choice = Console.ReadLine();
@@ -78,7 +77,6 @@ namespace InventoryManagementSystem
         // DISPLAY THE MAIN MENU
         static void ShowMainMenu()
         {
-            // Console.Clear() was moved to the while loop above
             Console.WriteLine("============================================");
             Console.WriteLine("     CAFE INVENTORY MANAGEMENT SYSTEM");
             Console.WriteLine($"     Staff: {currentUser.Username}");
@@ -110,17 +108,15 @@ namespace InventoryManagementSystem
                 Console.Write("Category Name (e.g. Coffee, Pastries): ");
                 string name = Console.ReadLine();
 
-                // Validate: name must not be empty
                 if (string.IsNullOrWhiteSpace(name))
                 {
                     Console.WriteLine("[!] Category name cannot be empty!");
                     return;
                 }
 
-                // Create a new Category object and add it to the list
                 Category newCategory = new Category(categoryIdCounter, name.Trim());
                 categories.Add(newCategory);
-                categoryIdCounter++; // Increment ID for the next category
+                categoryIdCounter++;
 
                 Console.WriteLine($"[+] Category '{name}' added successfully!");
             }
@@ -199,7 +195,7 @@ namespace InventoryManagementSystem
                         continue;
                     }
 
-                    // Philippine mobile number is 11 digits (e.g. 09171234567)
+                    // Philippine mobile number is 11 digits
                     if (digitsOnly.Length != 11)
                     {
                         Console.WriteLine("[!] Contact number must be 11 digits long! (e.g. 0917-123-4567)");
@@ -226,7 +222,6 @@ namespace InventoryManagementSystem
                     break; // Valid contact number, exit the loop
                 }
 
-                // Create a new Supplier object and add it to the list
                 Supplier newSupplier = new Supplier(supplierIdCounter, name, contact);
                 suppliers.Add(newSupplier);
                 supplierIdCounter++;
@@ -268,13 +263,37 @@ namespace InventoryManagementSystem
                 foreach (Supplier s in suppliers)
                     s.Display();
 
-                Console.Write("Item Name (e.g. Caramel Latte): ");
-                string name = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(name))
+                // Keep asking until a valid unique name is entered
+                string name = "";
+                while (true)
                 {
-                    Console.WriteLine("[!] Item name cannot be empty!");
-                    return;
+                    Console.Write("Item Name (e.g. Caramel Latte): ");
+                    name = Console.ReadLine().Trim();
+
+                    if (string.IsNullOrWhiteSpace(name))
+                    {
+                        Console.WriteLine("[!] Item name cannot be empty! Please try again.");
+                        continue;
+                    }
+
+                    // Check if a product with the same name already exists
+                    bool alreadyExists = false;
+                    foreach (Product p in products)
+                    {
+                        if (p.Name.ToLower() == name.ToLower())
+                        {
+                            alreadyExists = true;
+                            break;
+                        }
+                    }
+
+                    if (alreadyExists)
+                    {
+                        Console.WriteLine($"[!] '{name}' already exists! Please enter a different name.");
+                        continue;
+                    }
+
+                    break; // Valid and unique name
                 }
 
                 // Keep asking until a valid price is entered
@@ -287,16 +306,17 @@ namespace InventoryManagementSystem
                     if (!double.TryParse(priceInput, out price))
                     {
                         Console.WriteLine("[!] Invalid price! Please enter a valid number.");
-                        continue; // Ask again
+                        continue;
                     }
 
-                    if (price < 0)
+                    // Price must not be zero or negative
+                    if (price <= 0)
                     {
-                        Console.WriteLine("[!] Price cannot be negative! Please try again.");
-                        continue; // Ask again
+                        Console.WriteLine("[!] Price must be greater than zero! Please try again.");
+                        continue;
                     }
 
-                    break; // Price is valid, exit the loop
+                    break; // Valid price
                 }
 
                 // Keep asking until a valid stock quantity is entered
@@ -309,16 +329,16 @@ namespace InventoryManagementSystem
                     if (!int.TryParse(stockInput, out stock))
                     {
                         Console.WriteLine("[!] Invalid quantity! Please enter a whole number.");
-                        continue; // Ask again
+                        continue;
                     }
 
                     if (stock < 0)
                     {
                         Console.WriteLine("[!] Stock cannot be negative! Please try again.");
-                        continue; // Ask again
+                        continue;
                     }
 
-                    break; // Stock is valid, exit the loop
+                    break; // Valid stock
                 }
 
                 // Keep asking until a valid category ID is entered
@@ -334,7 +354,6 @@ namespace InventoryManagementSystem
                         continue;
                     }
 
-                    // Check if the category ID exists in our list
                     bool categoryExists = false;
                     foreach (Category c in categories)
                     {
@@ -351,7 +370,7 @@ namespace InventoryManagementSystem
                         continue;
                     }
 
-                    break; // Valid category ID, exit the loop
+                    break; // Valid category ID
                 }
 
                 // Keep asking until a valid supplier ID is entered
@@ -367,7 +386,6 @@ namespace InventoryManagementSystem
                         continue;
                     }
 
-                    // Check if the supplier ID exists in our list
                     bool supplierExists = false;
                     foreach (Supplier s in suppliers)
                     {
@@ -384,14 +402,21 @@ namespace InventoryManagementSystem
                         continue;
                     }
 
-                    break; // Valid supplier ID, exit the loop
+                    break; // Valid supplier ID
                 }
 
                 // Create and add the new cafe item
-                Product newProduct = new Product(productIdCounter, name.Trim(), price, stock, categoryId, supplierId);
+                Product newProduct = new Product(productIdCounter, name, price, stock, categoryId, supplierId);
                 products.Add(newProduct);
                 productIdCounter++;
 
+                Console.WriteLine($"[+] Cafe item '{name}' added successfully!");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[!] Error: {e.Message}");
+            }
+        }
 
         // FEATURE 4: VIEW ALL PRODUCTS (CAFE ITEMS)
         static void ViewAllProducts()
@@ -404,7 +429,6 @@ namespace InventoryManagementSystem
                 return;
             }
 
-            // Loop through and display each cafe item
             foreach (Product p in products)
             {
                 p.Display(categories, suppliers);
@@ -431,7 +455,6 @@ namespace InventoryManagementSystem
 
                 bool found = false;
 
-                // Look for items whose name contains the keyword (case-insensitive)
                 foreach (Product p in products)
                 {
                     if (p.Name.ToLower().Contains(keyword.ToLower()))
@@ -463,7 +486,6 @@ namespace InventoryManagementSystem
                 Console.Write("\nEnter Item ID to update: ");
                 int id = int.Parse(Console.ReadLine());
 
-                // Find the item with matching ID
                 Product found = null;
                 foreach (Product p in products)
                 {
@@ -491,8 +513,8 @@ namespace InventoryManagementSystem
                 if (!string.IsNullOrWhiteSpace(newPriceStr))
                 {
                     double newPrice = double.Parse(newPriceStr);
-                    if (newPrice < 0)
-                        Console.WriteLine("[!] Price not updated. Negative price is not allowed.");
+                    if (newPrice <= 0)
+                        Console.WriteLine("[!] Price not updated. Must be greater than zero.");
                     else
                         found.Price = newPrice;
                 }
@@ -522,7 +544,6 @@ namespace InventoryManagementSystem
                 Console.Write("\nEnter Item ID to delete: ");
                 int id = int.Parse(Console.ReadLine());
 
-                // Find the item
                 Product toDelete = null;
                 foreach (Product p in products)
                 {
@@ -539,7 +560,6 @@ namespace InventoryManagementSystem
                     return;
                 }
 
-                // Ask for confirmation before deleting
                 Console.Write($"Are you sure you want to delete '{toDelete.Name}'? (yes/no): ");
                 string confirm = Console.ReadLine();
 
@@ -576,7 +596,6 @@ namespace InventoryManagementSystem
                 Console.Write("\nEnter Item ID to restock: ");
                 int id = int.Parse(Console.ReadLine());
 
-                // Find the item
                 Product found = null;
                 foreach (Product p in products)
                 {
@@ -602,10 +621,8 @@ namespace InventoryManagementSystem
                     return;
                 }
 
-                // Add the units to the existing stock
                 found.Stock += qty;
 
-                // Save this action as a transaction record
                 TransactionRecord record = new TransactionRecord(
                     transactionIdCounter, "Restock", found.Id, found.Name, qty, currentUser.Username
                 );
@@ -637,7 +654,6 @@ namespace InventoryManagementSystem
                 Console.Write("\nEnter Item ID to deduct stock from: ");
                 int id = int.Parse(Console.ReadLine());
 
-                // Find the item
                 Product found = null;
                 foreach (Product p in products)
                 {
@@ -663,17 +679,14 @@ namespace InventoryManagementSystem
                     return;
                 }
 
-                // Make sure we're not deducting more than what's available
                 if (qty > found.Stock)
                 {
                     Console.WriteLine($"[!] Not enough stock! Current stock is only {found.Stock}.");
                     return;
                 }
 
-                // Subtract the units from the existing stock
                 found.Stock -= qty;
 
-                // Save this action as a transaction record
                 TransactionRecord record = new TransactionRecord(
                     transactionIdCounter, "Deduct", found.Id, found.Name, qty, currentUser.Username
                 );
@@ -720,7 +733,6 @@ namespace InventoryManagementSystem
 
             foreach (Product p in products)
             {
-                // Display items that are at or below the low stock limit
                 if (p.Stock <= LOW_STOCK_LIMIT)
                 {
                     p.Display(categories, suppliers);
@@ -745,7 +757,6 @@ namespace InventoryManagementSystem
 
             double totalValue = 0;
 
-            // Total value = price x stock for every cafe item
             foreach (Product p in products)
             {
                 double itemValue = p.Price * p.Stock;
@@ -757,7 +768,7 @@ namespace InventoryManagementSystem
             Console.WriteLine($"  TOTAL CAFE INVENTORY VALUE: PHP {totalValue:F2}");
         }
 
-        // sample cafe data
+        // SAMPLE CAFE DATA
         static void AddSampleData()
         {
             // Sample cafe categories
