@@ -532,6 +532,7 @@ namespace InventoryManagementSystem
         }
 
         // FEATURE 7: DELETE PRODUCT (CAFE ITEM)
+        // This method allows the staff to remove a cafe item from the inventory
         static void DeleteProduct()
         {
             Console.WriteLine("\n--- Delete Cafe Item ---");
@@ -539,49 +540,75 @@ namespace InventoryManagementSystem
             try
             {
                 ViewAllProducts();
+
+                // If there are no products, stop and go back to the menu
                 if (products.Count == 0) return;
 
-                Console.Write("\nEnter Item ID to delete: ");
-                int id = int.Parse(Console.ReadLine());
-
+                // This loop keeps asking for an ID until a valid one is entered
                 Product toDelete = null;
-                foreach (Product p in products)
+                while (true)
                 {
-                    if (p.Id == id)
+                    Console.Write("\nEnter Item ID to delete: ");
+                    string idInput = Console.ReadLine();
+
+                    if (!int.TryParse(idInput, out int id))
                     {
-                        toDelete = p;
-                        break;
+                        Console.WriteLine("[!] Invalid input! Please enter a valid number.");
+                        continue;
                     }
+
+                    // Search the products list for a product matching the entered ID
+                    foreach (Product p in products)
+                    {
+                        if (p.Id == id)
+                        {
+                            toDelete = p;
+                            break;        
+                        }
+                    }
+
+                    // If no product matched the ID, show an error and ask again
+                    if (toDelete == null)
+                    {
+                        Console.WriteLine("[!] Item ID not found! Please try again.");
+                        continue;
+                    }
+
+                    break; // ID is valid and product exists, exit the loop
                 }
 
-                if (toDelete == null)
+                // Ask for confirmation before deleting
+                while (true)
                 {
-                    Console.WriteLine("[!] Item not found!");
-                    return;
-                }
+                    Console.Write($"Are you sure you want to delete '{toDelete.Name}'? (yes/no): ");
+                    string confirm = Console.ReadLine().Trim().ToLower();
 
-                Console.Write($"Are you sure you want to delete '{toDelete.Name}'? (yes/no): ");
-                string confirm = Console.ReadLine();
+                    // Only accept yes or no as valid answers
+                    if (confirm != "yes" && confirm != "no" && confirm != "y" && confirm != "n")
+                    {
+                        Console.WriteLine("[!] Please type 'yes' or 'no' only.");
+                        continue;
+                    }
 
-                if (confirm.ToLower() == "yes")
-                {
-                    products.Remove(toDelete);
-                    Console.WriteLine("[+] Cafe item deleted successfully!");
+                    if (confirm == "yes" || confirm == "y")
+                    {
+                        products.Remove(toDelete);
+                        Console.WriteLine("[+] Cafe item deleted successfully!");
+                    }
+                    else
+                    {
+                        Console.WriteLine("[-] Delete cancelled.");
+                    }
+
+                    break;                                             // Valid answer, exit the loop
                 }
-                else
-                {
-                    Console.WriteLine("[-] Delete cancelled.");
-                }
-            }
-            catch (FormatException)
-            {
-                Console.WriteLine("[!] Invalid input! Please enter a valid number.");
             }
             catch (Exception e)
             {
-                Console.WriteLine($"[!] Error: {e.Message}");
+                Console.WriteLine($"[!] Error: {e.Message}");       // Catch any unexpected errors and display the message
             }
         }
+
         // FEATURE 8: RESTOCK PRODUCT (CAFE ITEM)
         // This method allows the staff to add more stock to an existing cafe item
         static void RestockProduct()
