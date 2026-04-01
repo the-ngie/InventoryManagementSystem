@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace InventoryManagementSystem
 {
-    // Represents a supplier/vendor
+    // Represents a supplier
         class Supplier
         {
             public int Id { get; private set; }
