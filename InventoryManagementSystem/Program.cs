@@ -39,7 +39,7 @@ namespace InventoryManagementSystem
             bool running = true;
             while (running)
             {
-                Console.Clear(); // ✅ Clear screen here before showing menu
+                Console.Clear(); // Clear screen here before showing menu
                 ShowMainMenu();
 
                 string choice = Console.ReadLine();
@@ -137,26 +137,97 @@ namespace InventoryManagementSystem
 
             try
             {
-                Console.Write("Supplier Name (e.g. Brew Masters Co.): ");
-                string name = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(name))
+                // Keep asking until a valid supplier name is entered
+                string name = "";
+                while (true)
                 {
-                    Console.WriteLine("[!] Supplier name cannot be empty!");
-                    return;
+                    Console.Write("Supplier Name (e.g. Brew Masters Co.): ");
+                    name = Console.ReadLine().Trim();
+
+                    if (string.IsNullOrWhiteSpace(name))
+                    {
+                        Console.WriteLine("[!] Supplier name cannot be empty! Please try again.");
+                        continue;
+                    }
+
+                    if (name.Length < 3)
+                    {
+                        Console.WriteLine("[!] Supplier name is too short! Must be at least 3 characters.");
+                        continue;
+                    }
+
+                    // Check if all characters are letters or spaces only
+                    bool validName = true;
+                    foreach (char ch in name)
+                    {
+                        if (!char.IsLetter(ch) && ch != ' ')
+                        {
+                            validName = false;
+                            break;
+                        }
+                    }
+
+                    if (!validName)
+                    {
+                        Console.WriteLine("[!] Supplier name must contain letters only! No numbers or special characters.");
+                        continue;
+                    }
+
+                    break; // Valid name, exit the loop
                 }
 
-                Console.Write("Contact Number: ");
-                string contact = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(contact))
+                // Keep asking until a valid contact number is entered
+                string contact = "";
+                while (true)
                 {
-                    Console.WriteLine("[!] Contact number cannot be empty!");
-                    return;
+                    Console.Write("Contact Number (e.g. 0917-123-4567): ");
+                    contact = Console.ReadLine().Trim();
+
+                    if (string.IsNullOrWhiteSpace(contact))
+                    {
+                        Console.WriteLine("[!] Contact number cannot be empty! Please try again.");
+                        continue;
+                    }
+
+                    // Remove dashes and spaces to check digits only
+                    string digitsOnly = contact.Replace("-", "").Replace(" ", "");
+
+                    // Must start with 09
+                    if (!digitsOnly.StartsWith("09"))
+                    {
+                        Console.WriteLine("[!] Contact number must start with 09! (e.g. 0917-123-4567)");
+                        continue;
+                    }
+
+                    // Philippine mobile number is 11 digits (e.g. 09171234567)
+                    if (digitsOnly.Length != 11)
+                    {
+                        Console.WriteLine("[!] Contact number must be 11 digits long! (e.g. 0917-123-4567)");
+                        continue;
+                    }
+
+                    // Check if all characters are digits
+                    bool allDigits = true;
+                    foreach (char ch in digitsOnly)
+                    {
+                        if (!char.IsDigit(ch))
+                        {
+                            allDigits = false;
+                            break;
+                        }
+                    }
+
+                    if (!allDigits)
+                    {
+                        Console.WriteLine("[!] Contact number must contain digits only! Please try again.");
+                        continue;
+                    }
+
+                    break; // Valid contact number, exit the loop
                 }
 
                 // Create a new Supplier object and add it to the list
-                Supplier newSupplier = new Supplier(supplierIdCounter, name.Trim(), contact.Trim());
+                Supplier newSupplier = new Supplier(supplierIdCounter, name, contact);
                 suppliers.Add(newSupplier);
                 supplierIdCounter++;
 
