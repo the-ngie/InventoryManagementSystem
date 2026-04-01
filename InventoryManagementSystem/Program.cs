@@ -293,7 +293,7 @@ namespace InventoryManagementSystem
                         continue;
                     }
 
-                    break; // Valid and unique name
+                    break;
                 }
 
                 // Keep asking until a valid price is entered
@@ -370,7 +370,7 @@ namespace InventoryManagementSystem
                         continue;
                     }
 
-                    break; // Valid category ID
+                    break; 
                 }
 
                 // Keep asking until a valid supplier ID is entered
@@ -402,7 +402,7 @@ namespace InventoryManagementSystem
                         continue;
                     }
 
-                    break; // Valid supplier ID
+                    break; 
                 }
 
                 // Create and add the new cafe item
@@ -474,6 +474,7 @@ namespace InventoryManagementSystem
         }
 
         // FEATURE 6: UPDATE PRODUCT (CAFE ITEM)
+        // This method allows the staff to update the name and price of an existing cafe item
         static void UpdateProduct()
         {
             Console.WriteLine("\n--- Update Cafe Item ---");
@@ -483,51 +484,117 @@ namespace InventoryManagementSystem
                 ViewAllProducts();
                 if (products.Count == 0) return;
 
-                Console.Write("\nEnter Item ID to update: ");
-                int id = int.Parse(Console.ReadLine());
-
+                // This loop keeps asking for an ID until a valid one is entered
                 Product found = null;
-                foreach (Product p in products)
+                while (true)
                 {
-                    if (p.Id == id)
+                    Console.Write("\nEnter Item ID to update: ");
+                    string idInput = Console.ReadLine();
+
+                    if (!int.TryParse(idInput, out int id))
                     {
-                        found = p;
+                        Console.WriteLine("[!] Invalid input! Please enter a valid number.");
+                        continue;
+                    }
+
+                    // Search the products list for a product matching the entered ID
+                    foreach (Product p in products)
+                    {
+                        if (p.Id == id)
+                        {
+                            found = p;
+                            break;
+                        }
+                    }
+
+                    // If no product matched the ID, show an error and ask again
+                    if (found == null)
+                    {
+                        Console.WriteLine("[!] Item ID not found! Please try again.");
+                        continue;
+                    }
+
+                    break; 
+                }
+
+                // This loop keeps asking for a new name until a valid one is entered
+                while (true)
+                {
+                    Console.Write($"New Name [{found.Name}] (Press click Enter to keep the current product name): ");
+                    string newName = Console.ReadLine().Trim();
+
+                    if (string.IsNullOrWhiteSpace(newName))                               // If the user just pressed Enter, keep the old name and move on
+                    {
                         break;
                     }
+                    
+                    if (newName.ToLower() == found.Name.ToLower())                      // Check if the new name is the same as the current name
+                    {
+                        Console.WriteLine("[!] New name is the same as the current name! Please enter a different name.");
+                        continue;
+                    }
+
+                    // Check if the new name already exists in another product
+                    bool alreadyExists = false;
+                    foreach (Product p in products)
+                    {
+                        if (p.Name.ToLower() == newName.ToLower() && p.Id != found.Id)
+                        {
+                            alreadyExists = true;
+                            break;
+                        }
+                    }
+
+                    if (alreadyExists)
+                    {
+                        Console.WriteLine($"[!] '{newName}' already exists! Please enter a different name.");
+                        continue;
+                    }
+
+                    found.Name = newName; // Update the name
+                    break;
                 }
 
-                if (found == null)
+                // This loop keeps asking for a new price until a valid one is entered
+                while (true)
                 {
-                    Console.WriteLine("[!] Item not found!");
-                    return;
-                }
+                    Console.Write($"New Price [{found.Price}] (Press click Enter to keep current): ");
+                    string newPriceStr = Console.ReadLine().Trim();
 
-                // Press Enter to keep the old value, or type a new one
-                Console.Write($"New Name [{found.Name}]: ");
-                string newName = Console.ReadLine();
-                if (!string.IsNullOrWhiteSpace(newName))
-                    found.Name = newName;
+                    // If the user just pressed Enter, keep the old price
+                    if (string.IsNullOrWhiteSpace(newPriceStr))
+                    {
+                        break;
+                    }
 
-                Console.Write($"New Price [{found.Price}]: ");
-                string newPriceStr = Console.ReadLine();
-                if (!string.IsNullOrWhiteSpace(newPriceStr))
-                {
-                    double newPrice = double.Parse(newPriceStr);
+                    if (!double.TryParse(newPriceStr, out double newPrice))
+                    {
+                        Console.WriteLine("[!] Invalid price! Please enter a valid number.");
+                        continue;
+                    }
+
                     if (newPrice <= 0)
-                        Console.WriteLine("[!] Price not updated. Must be greater than zero.");
-                    else
-                        found.Price = newPrice;
+                    {
+                        Console.WriteLine("[!] Price must be greater than zero! Please try again.");
+                        continue;
+                    }
+
+                    // Check if the new price is the same as the current price
+                    if (newPrice == found.Price)
+                    {
+                        Console.WriteLine("[!] New price is the same as the current price! Please enter a different price.");
+                        continue;
+                    }
+
+                    found.Price = newPrice; // Update the price
+                    break;
                 }
 
                 Console.WriteLine("[+] Cafe item updated successfully!");
             }
-            catch (FormatException)
-            {
-                Console.WriteLine("[!] Invalid input! Please enter a valid number.");
-            }
             catch (Exception e)
             {
-                Console.WriteLine($"[!] Error: {e.Message}");
+                Console.WriteLine($"[!] Error: {e.Message}");                               // Catch any unexpected errors and display the message
             }
         }
 
@@ -600,7 +667,7 @@ namespace InventoryManagementSystem
                         Console.WriteLine("[-] Delete cancelled.");
                     }
 
-                    break;                                             // Valid answer, exit the loop
+                    break;                                             
                 }
             }
             catch (Exception e)
@@ -670,7 +737,7 @@ namespace InventoryManagementSystem
                         continue;
                     }
 
-                    break;                                              // Valid quantity, exit the loop
+                    break;                                             
                 }
 
                 found.Stock += qty;                                    // Add the entered quantity to the product's current stock
@@ -854,7 +921,6 @@ namespace InventoryManagementSystem
             suppliers.Add(new Supplier(supplierIdCounter++, "CoolDrinks Distributor", "0919-555-6666"));
 
             // Sample cafe products
-            // Caramel Latte and Blueberry Muffin have low stock for testing Feature 11
             products.Add(new Product(productIdCounter++, "Espresso Shot", 60.00, 100, 1, 1));
             products.Add(new Product(productIdCounter++, "Caramel Latte", 150.00, 4, 1, 1));
             products.Add(new Product(productIdCounter++, "Croissant", 85.00, 30, 2, 2));
