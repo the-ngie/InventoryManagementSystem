@@ -392,13 +392,6 @@ namespace InventoryManagementSystem
                 products.Add(newProduct);
                 productIdCounter++;
 
-                Console.WriteLine($"[+] Cafe item '{name}' added successfully!");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[!] Error: {e.Message}");
-            }
-        }
 
         // FEATURE 4: VIEW ALL PRODUCTS (CAFE ITEMS)
         static void ViewAllProducts()
